@@ -1,54 +1,80 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fun 2 Learn SAT Vocab</title>
+  
+  <!-- Primary Meta Tags -->
+  <title>Fun 2 Learn SAT Vocab | Master 2200+ Words</title>
+  <meta name="title" content="Fun 2 Learn SAT Vocab | Master 2200+ Words">
+  <meta name="description" content="The ultimate AI-powered SAT vocabulary trainer. Featuring visual mnemonics, native pronunciation, and interactive games at fun2learnsatvocab.com.">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fun2learnsatvocab.com/">
+  <meta property="og:title" content="Fun 2 Learn SAT Vocab">
+  <meta property="og:description" content="Master 2200+ SAT words with AI-generated images and crystal-clear audio.">
+  <meta property="og:image" content="https://fun2learnsatvocab.com/og-image.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://fun2learnsatvocab.com/">
+  <meta property="twitter:title" content="Fun 2 Learn SAT Vocab">
+  <meta property="twitter:description" content="Master 2200+ SAT words with AI-generated images and crystal-clear audio.">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+  <link rel="canonical" href="https://fun2learnsatvocab.com" />
+  
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    .card-flip {
-      perspective: 1000px;
-    }
+    body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+    .card-flip { perspective: 1000px; }
     .card-inner {
       position: relative;
       width: 100%;
       height: 100%;
-      transition: transform 0.6s;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       transform-style: preserve-3d;
     }
-    .card-flipped .card-inner {
-      transform: rotateY(180deg);
-    }
+    .card-flipped .card-inner { transform: rotateY(180deg); }
     .card-front, .card-back {
       position: absolute;
       width: 100%;
       height: 100%;
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
+      border-radius: 3rem;
     }
-    .card-back {
-      transform: rotateY(180deg);
+    .card-back { transform: rotateY(180deg); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Elegant transition for view changes */
+    .view-enter { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
-<script type="importmap">
-{
-  "imports": {
-    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "vite": "https://esm.sh/vite@^7.3.0"
+
+  <script type="importmap">
+  {
+    "imports": {
+      "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+      "react/": "https://esm.sh/react@^19.2.3/",
+      "react": "https://esm.sh/react@^19.2.3",
+      "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+      "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+      "vite": "https://esm.sh/vite@^7.3.0"
+    }
   }
-}
-</script>
+  </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body class="bg-slate-50 text-slate-900 overflow-x-hidden">
   <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
 </body>
 </html>
