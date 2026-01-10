@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://fun2learnsatvocab.com/sitemap.xml

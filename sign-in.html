@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign In | Fun 2 Learn SAT Vocab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f6f7fb;
+        --ink: #111827;
+        --muted: #5b6478;
+        --primary: #4c4cf3;
+        --primary-deep: #2b2bd9;
+        --soft: #eef0ff;
+        --card: #ffffff;
+        --shadow: 0 24px 60px rgba(17, 24, 39, 0.08);
+        --radius: 22px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(circle at top, #eef1ff 0%, #f6f7fb 45%, #fefeff 100%);
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 28px 72px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .brand .logo {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #5b5bff, #3a32d8);
+        color: white;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        box-shadow: 0 10px 20px rgba(76, 76, 243, 0.35);
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-weight: 600;
+        color: #6b7280;
+      }
+
+      .pill {
+        padding: 10px 20px;
+        border-radius: 999px;
+        background: var(--primary);
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 12px 25px rgba(76, 76, 243, 0.35);
+      }
+
+      main {
+        flex: 1;
+        display: grid;
+        place-items: center;
+        padding: 40px 72px 80px;
+      }
+
+      .auth-shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+        gap: 28px;
+        width: min(980px, 100%);
+        align-items: stretch;
+      }
+
+      .panel {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 32px;
+        box-shadow: var(--shadow);
+        border: 1px solid #eef0f6;
+      }
+
+      .panel h1 {
+        font-family: "Fraunces", "Space Grotesk", serif;
+        font-size: 2.1rem;
+        margin: 0 0 10px;
+      }
+
+      .panel p {
+        color: var(--muted);
+        margin: 0 0 26px;
+      }
+
+      form {
+        display: grid;
+        gap: 16px;
+      }
+
+      label {
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid #e5e7f0;
+        font-size: 1rem;
+        font-family: inherit;
+      }
+
+      input:focus {
+        outline: 2px solid rgba(76, 76, 243, 0.3);
+        border-color: rgba(76, 76, 243, 0.4);
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .primary-btn {
+        padding: 14px 20px;
+        border-radius: 999px;
+        background: var(--primary);
+        color: white;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 16px 28px rgba(76, 76, 243, 0.35);
+      }
+
+      .secondary-btn {
+        padding: 12px 18px;
+        border-radius: 999px;
+        border: 1px solid #e5e7f0;
+        background: white;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .promo {
+        background: linear-gradient(140deg, #4c4cf3, #7d67ff);
+        color: white;
+        display: grid;
+        gap: 18px;
+        align-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .promo h2 {
+        font-family: "Fraunces", "Space Grotesk", serif;
+        font-size: 2rem;
+        margin: 0;
+      }
+
+      .promo p {
+        color: rgba(255, 255, 255, 0.85);
+        margin: 0;
+      }
+
+      .promo ul {
+        margin: 0;
+        padding-left: 18px;
+        color: rgba(255, 255, 255, 0.88);
+      }
+
+      .promo::after {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        top: -40px;
+        right: -50px;
+      }
+
+      .promo::before {
+        content: "";
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.14);
+        bottom: -80px;
+        left: -80px;
+      }
+
+      .switch {
+        margin-top: 10px;
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+
+      .switch a {
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      @media (max-width: 960px) {
+        header {
+          padding: 24px 32px;
+        }
+
+        main {
+          padding: 30px 32px 70px;
+        }
+
+        .auth-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .promo {
+          order: -1;
+        }
+      }
+
+      @media (max-width: 560px) {
+        header {
+          padding: 20px 22px;
+        }
+
+        .nav-actions {
+          display: none;
+        }
+
+        main {
+          padding: 20px 22px 60px;
+        }
+
+        .panel {
+          padding: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <a class="brand" href="index.html">
+          <div class="logo">F</div>
+          <span>Fun 2 Learn SAT Vocab</span>
+        </a>
+        <div class="nav-actions">
+          <a href="sign-in.html">Login</a>
+          <a class="pill" href="sign-up.html">Get Started</a>
+        </div>
+      </header>
+
+      <main>
+        <section class="auth-shell">
+          <div class="panel">
+            <h1>Welcome back</h1>
+            <p>Pick up where you left off and keep your momentum going.</p>
+            <form action="dashboard.html">
+              <div>
+                <label for="email">Email</label>
+                <input id="email" type="email" placeholder="you@example.com" required />
+              </div>
+              <div>
+                <label for="password">Password</label>
+                <input id="password" type="password" placeholder="••••••••" required />
+              </div>
+              <div class="row">
+                <label><input type="checkbox" /> Remember me</label>
+                <a href="#">Forgot password?</a>
+              </div>
+              <button class="primary-btn" type="submit">Sign In</button>
+              <button class="secondary-btn" type="button">Continue with Google</button>
+            </form>
+            <div class="switch">
+              New here? <a href="sign-up.html">Create an account</a>
+            </div>
+          </div>
+
+          <div class="panel promo">
+            <h2>Study smarter in one place.</h2>
+            <p>Log in to unlock your personalized word list, progress tracking, and daily drills.</p>
+            <ul>
+              <li>AI mnemonics tuned to your weak spots</li>
+              <li>Audio walkthroughs for every word</li>
+              <li>Fresh practice sets every day</li>
+            </ul>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

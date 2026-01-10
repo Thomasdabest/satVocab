@@ -1,7 +1,0 @@
-{
-  "name": "Fun 2 Learn SAT Vocab",
-  "description": "A comprehensive vocabulary learning platform featuring AI-generated visual aids, text-to-speech pronunciation, interactive quizzes, and an engaging word-matching game.",
-  "requestFramePermissions": [
-    "microphone"
-  ]
-}
