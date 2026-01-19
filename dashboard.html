@@ -191,6 +191,13 @@
         font-size: 1rem;
         line-height: 1.5;
       }
+      .face .sentence {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.4;
+        font-style: italic;
+      }
 
       .photo {
         width: 100%;
@@ -366,6 +373,10 @@
         const meaning = document.createElement("p");
         meaning.textContent = entry.meaning;
 
+        const sentence = document.createElement("p");
+        sentence.className = "sentence";
+        sentence.textContent = entry.sentence || "";
+
         const photo = document.createElement("img");
         photo.className = "photo";
         photo.src = photoFor(entry.word);
@@ -386,7 +397,7 @@
         flipBack.textContent = "Flip back";
 
         actions.append(audioBtn, flipBack);
-        back.append(backTitle, meaning, photo, actions);
+        back.append(backTitle, meaning, sentence, photo, actions);
         card.append(front, back);
         article.append(card);
         return article;
