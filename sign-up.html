@@ -279,7 +279,7 @@
           <div class="panel">
             <h1>Create your account</h1>
             <p>Get your personalized vocabulary plan in less than a minute.</p>
-            <form>
+            <form id="signup-form">
               <div class="grid">
                 <div>
                   <label for="first-name">First name</label>
@@ -309,10 +309,11 @@
                 <label for="password">Password</label>
                 <input id="password" type="password" placeholder="At least 8 characters" required />
               </div>
-              <label><input type="checkbox" required /> I agree to the Terms & Privacy.</label>
+              <label><input id="terms" type="checkbox" required /> I agree to the Terms & Privacy.</label>
               <button class="primary-btn" type="submit">Create Account</button>
               <button class="secondary-btn" type="button">Sign up with Google</button>
             </form>
+            <div id="signup-message" class="switch" role="status" aria-live="polite"></div>
             <div class="switch">
               Already have an account? <a href="sign-in.html">Sign in</a>
             </div>
@@ -332,5 +333,84 @@
         </section>
       </main>
     </div>
+    <script>
+      const signupForm = document.querySelector("#signup-form");
+      const message = document.querySelector("#signup-message");
+
+      const USERS_KEY = "satvocab.users";
+      const SESSION_KEY = "satvocab.session";
+
+      const getUsers = () => {
+        try {
+          const stored = localStorage.getItem(USERS_KEY);
+          return stored ? JSON.parse(stored) : [];
+        } catch (error) {
+          return [];
+        }
+      };
+
+      const saveUsers = (users) => {
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      };
+
+      const showMessage = (text, tone) => {
+        message.textContent = text;
+        message.style.color = tone === "error" ? "#b42318" : "var(--muted)";
+      };
+
+      const makeId = () => {
+        if (crypto?.randomUUID) {
+          return crypto.randomUUID();
+        }
+        return `user_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      };
+
+      signupForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        showMessage("");
+
+        const firstName = document.querySelector("#first-name").value.trim();
+        const lastName = document.querySelector("#last-name").value.trim();
+        const email = document.querySelector("#email").value.trim().toLowerCase();
+        const grade = document.querySelector("#grade").value;
+        const password = document.querySelector("#password").value;
+        const acceptedTerms = document.querySelector("#terms").checked;
+
+        if (!acceptedTerms) {
+          showMessage("Please accept the Terms & Privacy.", "error");
+          return;
+        }
+
+        if (password.length < 8) {
+          showMessage("Password must be at least 8 characters.", "error");
+          return;
+        }
+
+        const users = getUsers();
+        const existingUser = users.find((user) => user.email === email);
+
+        if (existingUser) {
+          showMessage("That email is already registered. Try signing in.", "error");
+          return;
+        }
+
+        const newUser = {
+          id: makeId(),
+          firstName,
+          lastName,
+          email,
+          grade,
+          password,
+          createdAt: new Date().toISOString(),
+        };
+
+        users.push(newUser);
+        saveUsers(users);
+        localStorage.setItem(SESSION_KEY, JSON.stringify({ email }));
+
+        showMessage("Account created! Redirecting you to your dashboard...");
+        window.location.href = "dashboard.html";
+      });
+    </script>
   </body>
 </html>

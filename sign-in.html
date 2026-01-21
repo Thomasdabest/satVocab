@@ -290,7 +290,7 @@
           <div class="panel">
             <h1>Welcome back</h1>
             <p>Pick up where you left off and keep your momentum going.</p>
-            <form action="dashboard.html">
+            <form id="signin-form">
               <div>
                 <label for="email">Email</label>
                 <input id="email" type="email" placeholder="you@example.com" required />
@@ -306,6 +306,7 @@
               <button class="primary-btn" type="submit">Sign In</button>
               <button class="secondary-btn" type="button">Continue with Google</button>
             </form>
+            <div id="signin-message" class="switch" role="status" aria-live="polite"></div>
             <div class="switch">
               New here? <a href="sign-up.html">Create an account</a>
             </div>
@@ -323,5 +324,46 @@
         </section>
       </main>
     </div>
+    <script>
+      const signinForm = document.querySelector("#signin-form");
+      const message = document.querySelector("#signin-message");
+
+      const USERS_KEY = "satvocab.users";
+      const SESSION_KEY = "satvocab.session";
+
+      const getUsers = () => {
+        try {
+          const stored = localStorage.getItem(USERS_KEY);
+          return stored ? JSON.parse(stored) : [];
+        } catch (error) {
+          return [];
+        }
+      };
+
+      const showMessage = (text, tone) => {
+        message.textContent = text;
+        message.style.color = tone === "error" ? "#b42318" : "var(--muted)";
+      };
+
+      signinForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        showMessage("");
+
+        const email = document.querySelector("#email").value.trim().toLowerCase();
+        const password = document.querySelector("#password").value;
+
+        const users = getUsers();
+        const user = users.find((entry) => entry.email === email);
+
+        if (!user || user.password !== password) {
+          showMessage("Invalid email or password. Try again.", "error");
+          return;
+        }
+
+        localStorage.setItem(SESSION_KEY, JSON.stringify({ email }));
+        showMessage("Welcome back! Redirecting you...");
+        window.location.href = "dashboard.html";
+      });
+    </script>
   </body>
 </html>
