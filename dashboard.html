@@ -534,11 +534,6 @@
             speak(card.dataset.word);
             return;
           }
-          if (button.classList.contains("flip-btn")) {
-            event.stopPropagation();
-            card.classList.toggle("is-flipped");
-            return;
-          }
         }
         const entry = vocab.find((item) => item.word === card.dataset.word);
         if (entry) {
