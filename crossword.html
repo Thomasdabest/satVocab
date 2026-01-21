@@ -250,6 +250,42 @@
         color: var(--ink);
       }
 
+      .leaderboard {
+        display: grid;
+        gap: 12px;
+      }
+
+      .leaderboard-meta {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .leaderboard-form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .leaderboard-form input {
+        flex: 1 1 160px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        font-weight: 600;
+      }
+
+      .leaderboard-status {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .leaderboard-list {
+        margin: 0;
+        padding-left: 18px;
+      }
+
       .clue-card li {
         margin-bottom: 6px;
         line-height: 1.3;
@@ -325,6 +361,25 @@
               </div>
               <div class="status" id="status-text">Good luck!</div>
             </div>
+            <div class="clue-card leaderboard">
+              <h3>Weekly Leaderboard</h3>
+              <p class="leaderboard-meta">Resets Sundays at 11:59 PM PST.</p>
+              <div class="leaderboard-form">
+                <input
+                  id="player-name"
+                  type="text"
+                  placeholder="Your name"
+                  maxlength="20"
+                />
+                <button class="btn secondary" id="submit-score-btn" type="button">
+                  Submit score
+                </button>
+              </div>
+              <div class="leaderboard-status" id="leaderboard-status">
+                Check your board to post a score.
+              </div>
+              <ol class="leaderboard-list" id="leaderboard-list"></ol>
+            </div>
           </div>
         </div>
       </section>
@@ -359,6 +414,138 @@
 
       const GRID_SIZE = 13;
       const MAX_WORDS = 14;
+      const LEADERBOARD_KEY = "crosswordLeaderboard";
+      const LEADERBOARD_RESET_KEY = "crosswordLeaderboardResetAt";
+      const TIME_ZONE = "America/Los_Angeles";
+
+      const getTimeZoneOffset = (date, timeZone) => {
+        const dtf = new Intl.DateTimeFormat("en-US", {
+          timeZone,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false
+        });
+        const parts = dtf.formatToParts(date).reduce((acc, part) => {
+          if (part.type !== "literal") acc[part.type] = part.value;
+          return acc;
+        }, {});
+        const utcFromParts = new Date(
+          `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}.000Z`
+        );
+        return utcFromParts.getTime() - date.getTime();
+      };
+
+      const getZonedDate = (date, timeZone) => {
+        const offset = getTimeZoneOffset(date, timeZone);
+        return new Date(date.getTime() + offset);
+      };
+
+      const zonedTimeToUtc = ({ year, month, day, hour, minute, second }, timeZone) => {
+        const utcGuess = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+        const offset = getTimeZoneOffset(utcGuess, timeZone);
+        return new Date(utcGuess.getTime() - offset);
+      };
+
+      const getNextResetTimestamp = (now = new Date()) => {
+        const pstNow = getZonedDate(now, TIME_ZONE);
+        const day = pstNow.getUTCDay();
+        const minutesNow = pstNow.getUTCHours() * 60 + pstNow.getUTCMinutes();
+        const resetMinutes = 23 * 60 + 59;
+        let daysUntilSunday = (7 - day) % 7;
+        if (day === 0 && minutesNow >= resetMinutes) {
+          daysUntilSunday = 7;
+        }
+        const targetDate = new Date(
+          Date.UTC(
+            pstNow.getUTCFullYear(),
+            pstNow.getUTCMonth(),
+            pstNow.getUTCDate() + daysUntilSunday,
+            23,
+            59,
+            0
+          )
+        );
+        return zonedTimeToUtc(
+          {
+            year: targetDate.getUTCFullYear(),
+            month: targetDate.getUTCMonth() + 1,
+            day: targetDate.getUTCDate(),
+            hour: 23,
+            minute: 59,
+            second: 0
+          },
+          TIME_ZONE
+        ).getTime();
+      };
+
+      const ensureWeeklyReset = () => {
+        const now = new Date();
+        const storedReset = Number(localStorage.getItem(LEADERBOARD_RESET_KEY) || 0);
+        if (!storedReset || now.getTime() >= storedReset) {
+          localStorage.setItem(LEADERBOARD_KEY, JSON.stringify([]));
+          localStorage.setItem(
+            LEADERBOARD_RESET_KEY,
+            String(getNextResetTimestamp(now))
+          );
+        }
+      };
+
+      const loadLeaderboard = () => {
+        ensureWeeklyReset();
+        try {
+          return JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]");
+        } catch {
+          return [];
+        }
+      };
+
+      const saveLeaderboard = (entries) => {
+        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries));
+      };
+
+      const formatResetTime = () => {
+        const resetAt = Number(localStorage.getItem(LEADERBOARD_RESET_KEY) || 0);
+        if (!resetAt) return "Next reset pending...";
+        return new Intl.DateTimeFormat("en-US", {
+          timeZone: TIME_ZONE,
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        }).format(new Date(resetAt));
+      };
+
+      const renderLeaderboard = () => {
+        const list = document.querySelector("#leaderboard-list");
+        const status = document.querySelector("#leaderboard-status");
+        const entries = loadLeaderboard();
+        list.innerHTML = "";
+
+        if (!entries.length) {
+          const empty = document.createElement("li");
+          empty.textContent = "No scores yet. Be the first!";
+          list.appendChild(empty);
+        } else {
+          entries
+            .slice()
+            .sort((a, b) => b.score - a.score || a.timestamp - b.timestamp)
+            .slice(0, 10)
+            .forEach((entry) => {
+              const li = document.createElement("li");
+              const percent =
+                entry.total > 0 ? Math.round((entry.score / entry.total) * 100) : 0;
+              li.textContent = `${entry.name} — ${entry.score}/${entry.total} (${percent}%)`;
+              list.appendChild(li);
+            });
+        }
+
+        status.textContent = `Next reset: ${formatResetTime()} PST`;
+      };
 
       const createGrid = (size) =>
         Array.from({ length: size }, () =>
@@ -549,11 +736,13 @@
       };
 
       const initGame = () => {
+        let lastScore = null;
         const selected = WORD_BANK.slice(0, MAX_WORDS);
         const { grid, placements } = generateCrossword(selected, GRID_SIZE);
         const numbers = buildNumbering(grid);
         renderGrid(grid, numbers);
         renderClues(placements, numbers);
+        renderLeaderboard();
 
         document.querySelector("#check-btn").addEventListener("click", () => {
           const cells = document.querySelectorAll(".cell");
@@ -577,6 +766,7 @@
               cell.classList.remove("correct");
             }
           });
+          lastScore = { correct, total };
           setStatus(`You have ${correct} of ${total} letters correct.`);
         });
 
@@ -595,6 +785,27 @@
             input.closest(".cell").classList.remove("incorrect");
           });
           setStatus("Puzzle revealed.");
+        });
+
+        document.querySelector("#submit-score-btn").addEventListener("click", () => {
+          const status = document.querySelector("#leaderboard-status");
+          if (!lastScore) {
+            status.textContent = "Check your board before submitting.";
+            return;
+          }
+          ensureWeeklyReset();
+          const nameInput = document.querySelector("#player-name");
+          const name = nameInput.value.trim() || "Player";
+          const entries = loadLeaderboard();
+          entries.push({
+            name: name.slice(0, 20),
+            score: lastScore.correct,
+            total: lastScore.total,
+            timestamp: Date.now()
+          });
+          saveLeaderboard(entries);
+          renderLeaderboard();
+          status.textContent = "Score submitted!";
         });
       };
 
