@@ -420,6 +420,13 @@
       const photoFor = (word) =>
         `https://source.unsplash.com/featured/600x400?${encodeURIComponent(word)}`;
 
+      const sentenceFor = (entry) => {
+        if (entry.sentence && entry.sentence.trim()) {
+          return entry.sentence;
+        }
+        return `Example: The word "${entry.word}" means ${entry.meaning}.`;
+      };
+
       const speak = (word) => {
         if (!window.speechSynthesis) {
           return;
@@ -463,7 +470,7 @@
 
         const sentence = document.createElement("p");
         sentence.className = "sentence";
-        sentence.textContent = entry.sentence || "";
+        sentence.textContent = sentenceFor(entry);
 
         const photo = document.createElement("img");
         photo.className = "photo";
