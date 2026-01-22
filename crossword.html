@@ -153,20 +153,32 @@
         line-height: 1.4;
       }
 
-      .answer-row {
-        display: flex;
+      .choices {
+        display: grid;
         gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
       }
 
-      .answer-row input {
-        flex: 1 1 200px;
-        padding: 12px 16px;
-        border-radius: 999px;
+      .choice-btn {
         border: 1px solid var(--border);
-        font-family: "Space Grotesk", system-ui, sans-serif;
+        background: #f8f9fe;
+        color: var(--ink);
+        padding: 12px 16px;
+        border-radius: 16px;
         font-weight: 600;
+        cursor: pointer;
+        text-align: left;
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+      }
+
+      .choice-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(16, 24, 40, 0.08);
+      }
+
+      .choice-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+        box-shadow: none;
       }
 
       .quiz-meta {
@@ -306,19 +318,10 @@
               <div class="clue-card">
                 <h3>Question</h3>
                 <p class="question" id="question-text">Loading...</p>
-                <div class="answer-row">
-                  <input
-                    id="answer-input"
-                    type="text"
-                    placeholder="Type the word"
-                    autocomplete="off"
-                  />
-                  <button class="btn" id="submit-answer-btn" type="button">
-                    Submit
-                  </button>
-                </div>
+                <div class="choices" id="choices"></div>
                 <div class="quiz-meta">
                   <span id="score-text">Score: 0 pts</span>
+                  <span id="timer-text">Time: 60s</span>
                   <span id="progress-text">Question 1 of 1</span>
                 </div>
                 <div class="status" id="status-text">Good luck!</div>
@@ -342,9 +345,6 @@
                   placeholder="Your name"
                   maxlength="20"
                 />
-                <button class="btn secondary" id="submit-score-btn" type="button">
-                  Submit score
-                </button>
               </div>
               <div class="leaderboard-status" id="leaderboard-status">
                 Check your board to post a score.
@@ -385,6 +385,7 @@
 
       const SCORE_CORRECT = 10;
       const SCORE_WRONG = -5;
+      const QUIZ_SECONDS = 60;
       const LEADERBOARD_KEY = "rapidQuizLeaderboard";
       const LEADERBOARD_RESET_KEY = "rapidQuizLeaderboardResetAt";
       const TIME_ZONE = "America/Los_Angeles";
@@ -531,10 +532,10 @@
 
       const initGame = () => {
         const questionEl = document.querySelector("#question-text");
-        const answerInput = document.querySelector("#answer-input");
+        const choicesEl = document.querySelector("#choices");
         const scoreText = document.querySelector("#score-text");
+        const timerText = document.querySelector("#timer-text");
         const progressText = document.querySelector("#progress-text");
-        const submitBtn = document.querySelector("#submit-answer-btn");
         const skipBtn = document.querySelector("#skip-btn");
         const restartBtn = document.querySelector("#restart-btn");
         const status = document.querySelector("#status-text");
@@ -543,80 +544,19 @@
         let index = 0;
         let score = 0;
         let answered = 0;
+        let timeLeft = QUIZ_SECONDS;
+        let timerId = null;
+        let isOver = false;
+        let hasSubmitted = false;
 
-        const updateScore = () => {
-          scoreText.textContent = `Score: ${score} pts`;
-          progressText.textContent = `Question ${Math.min(
-            index + 1,
-            order.length
-          )} of ${order.length}`;
-        };
-
-        const showQuestion = () => {
-          if (index >= order.length) {
-            questionEl.textContent = "Quiz complete! Submit your score.";
-            answerInput.value = "";
-            answerInput.disabled = true;
-            submitBtn.disabled = true;
-            skipBtn.disabled = true;
-            status.textContent = `Final score: ${score} pts.`;
-            updateScore();
-            return;
-          }
-          const entry = order[index];
-          questionEl.textContent = entry.clue;
-          answerInput.value = "";
-          answerInput.disabled = false;
-          submitBtn.disabled = false;
-          skipBtn.disabled = false;
-          status.textContent = "Type the word that matches the clue.";
-          answerInput.focus();
-          updateScore();
-        };
-
-        const checkAnswer = () => {
-          const entry = order[index];
-          const value = answerInput.value.trim().toLowerCase();
-          if (!value) {
-            status.textContent = "Type an answer before submitting.";
-            return;
-          }
-          answered += 1;
-          if (value === entry.word.toLowerCase()) {
-            score += SCORE_CORRECT;
-            status.textContent = `Correct! +${SCORE_CORRECT} points.`;
-          } else {
-            score += SCORE_WRONG;
-            status.textContent = `Wrong. The answer was "${entry.word}". ${SCORE_WRONG} points.`;
-          }
-          index += 1;
-          showQuestion();
-        };
-
-        submitBtn.addEventListener("click", checkAnswer);
-        answerInput.addEventListener("keydown", (event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            checkAnswer();
-          }
-        });
-
-        skipBtn.addEventListener("click", () => {
-          index += 1;
-          status.textContent = "Skipped.";
-          showQuestion();
-        });
-
-        restartBtn.addEventListener("click", () => {
-          order = shuffle(WORD_BANK);
-          index = 0;
-          score = 0;
-          answered = 0;
-          showQuestion();
-        });
-
-        document.querySelector("#submit-score-btn").addEventListener("click", () => {
+        const submitScore = (auto = false) => {
           const statusEl = document.querySelector("#leaderboard-status");
+          if (hasSubmitted) {
+            if (!auto) {
+              statusEl.textContent = "Score already submitted.";
+            }
+            return;
+          }
           if (answered === 0) {
             statusEl.textContent = "Answer at least one question first.";
             return;
@@ -633,10 +573,114 @@
           saveLeaderboard(entries);
           renderLeaderboard();
           statusEl.textContent = "Score submitted!";
+          hasSubmitted = true;
+        };
+
+        const updateScore = () => {
+          scoreText.textContent = `Score: ${score} pts`;
+          timerText.textContent = `Time: ${timeLeft}s`;
+          progressText.textContent = `Question ${Math.min(
+            index + 1,
+            order.length
+          )} of ${order.length}`;
+        };
+
+        const endQuiz = (message) => {
+          isOver = true;
+          if (timerId) {
+            clearInterval(timerId);
+            timerId = null;
+          }
+          questionEl.textContent = "Quiz complete! Submit your score.";
+          choicesEl.innerHTML = "";
+          skipBtn.disabled = true;
+          status.textContent = message || `Final score: ${score} pts.`;
+          updateScore();
+          submitScore(true);
+        };
+
+        const startTimer = () => {
+          if (timerId) clearInterval(timerId);
+          timerId = setInterval(() => {
+            timeLeft -= 1;
+            if (timeLeft <= 0) {
+              timeLeft = 0;
+              updateScore();
+              endQuiz("Time's up! Submit your score.");
+              return;
+            }
+            updateScore();
+          }, 1000);
+        };
+
+        const buildChoices = (entry) => {
+          const distractors = shuffle(
+            WORD_BANK.filter((item) => item.word !== entry.word)
+          )
+            .slice(0, 3)
+            .map((item) => item.word);
+          return shuffle([entry.word, ...distractors]);
+        };
+
+        const showQuestion = () => {
+          if (isOver) return;
+          if (index >= order.length) {
+            endQuiz(`Final score: ${score} pts.`);
+            return;
+          }
+          const entry = order[index];
+          questionEl.textContent = entry.clue;
+          const choices = buildChoices(entry);
+          choicesEl.innerHTML = "";
+          choices.forEach((choice) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "choice-btn";
+            btn.textContent = choice;
+            btn.addEventListener("click", () => {
+              if (isOver) return;
+              answered += 1;
+              if (choice === entry.word) {
+                score += SCORE_CORRECT;
+                status.textContent = `Correct! +${SCORE_CORRECT} points.`;
+              } else {
+                score += SCORE_WRONG;
+                status.textContent = `Wrong. The answer was "${entry.word}". ${SCORE_WRONG} points.`;
+              }
+              index += 1;
+              showQuestion();
+            });
+            choicesEl.appendChild(btn);
+          });
+          skipBtn.disabled = false;
+          status.textContent = "Pick the word that matches the clue.";
+          updateScore();
+        };
+
+        skipBtn.addEventListener("click", () => {
+          if (isOver) return;
+          index += 1;
+          status.textContent = "Skipped.";
+          showQuestion();
         });
+
+        restartBtn.addEventListener("click", () => {
+          order = shuffle(WORD_BANK);
+          index = 0;
+          score = 0;
+          answered = 0;
+          timeLeft = QUIZ_SECONDS;
+          isOver = false;
+          hasSubmitted = false;
+          skipBtn.disabled = false;
+          showQuestion();
+          startTimer();
+        });
+
 
         renderLeaderboard();
         showQuestion();
+        startTimer();
       };
 
       initGame();
