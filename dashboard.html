@@ -266,19 +266,6 @@
         min-height: 300px;
       }
 
-      .modal-close {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        border: none;
-        background: #f3f5fb;
-        color: #59627a;
-        border-radius: 999px;
-        padding: 8px 12px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-
       @media (max-width: 1100px) {
         .filter-panel {
           grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -408,7 +395,6 @@
     </main>
     <div class="modal" id="card-modal" aria-hidden="true" role="dialog">
       <div class="modal-content">
-        <button class="modal-close" id="modal-close" type="button">Close</button>
         <div id="modal-body"></div>
       </div>
     </div>
@@ -418,7 +404,6 @@
       const tabs = document.querySelector("#alphabet-tabs");
       const modal = document.querySelector("#card-modal");
       const modalBody = document.querySelector("#modal-body");
-      const modalClose = document.querySelector("#modal-close");
       const sortedVocab = vocab
         .slice()
         .sort((a, b) => a.word.localeCompare(b.word));
@@ -535,6 +520,8 @@
         document.body.style.overflow = "";
       };
 
+      let hoveredCard = null;
+
       const renderGrid = (letter) => {
         grid.innerHTML = "";
         const fragment = document.createDocumentFragment();
@@ -607,15 +594,51 @@
         card.classList.toggle("is-flipped");
       });
 
+      const trackHover = (event) => {
+        const card = event.target.closest(".flashcard");
+        if (!card) {
+          hoveredCard = null;
+          return;
+        }
+        hoveredCard = card;
+      };
+
+      grid.addEventListener("mouseover", trackHover);
+      grid.addEventListener("mouseout", (event) => {
+        if (!event.relatedTarget || !grid.contains(event.relatedTarget)) {
+          hoveredCard = null;
+        }
+      });
+
+      modalBody.addEventListener("mouseover", trackHover);
+      modalBody.addEventListener("mouseout", (event) => {
+        if (!event.relatedTarget || !modalBody.contains(event.relatedTarget)) {
+          hoveredCard = null;
+        }
+      });
+
       modal.addEventListener("click", (event) => {
         if (event.target === modal) {
           closeModal();
         }
       });
 
-      modalClose.addEventListener("click", closeModal);
-
       document.addEventListener("keydown", (event) => {
+        if (event.key === " " || event.code === "Space") {
+          if (modal.classList.contains("is-open")) {
+            const modalCard = modalBody.querySelector(".flashcard");
+            if (modalCard) {
+              event.preventDefault();
+              modalCard.classList.toggle("is-flipped");
+            }
+            return;
+          }
+          if (hoveredCard && document.body.contains(hoveredCard)) {
+            event.preventDefault();
+            hoveredCard.classList.toggle("is-flipped");
+          }
+          return;
+        }
         if (event.key === "Escape" && modal.classList.contains("is-open")) {
           closeModal();
         }
