@@ -423,7 +423,16 @@
         .slice()
         .sort((a, b) => a.word.localeCompare(b.word));
 
-      const photoFor = (word) =>
+      const slugifyWord = (word) =>
+        word
+          .toLowerCase()
+          .trim()
+          .replace(/['"]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+
+      const localPhotoFor = (word) => `images/${slugifyWord(word)}.jpg`;
+      const fallbackPhotoFor = (word) =>
         `https://source.unsplash.com/featured/600x400?${encodeURIComponent(word)}`;
 
       const sentenceFor = (entry) => {
@@ -480,8 +489,13 @@
 
         const photo = document.createElement("img");
         photo.className = "photo";
-        photo.src = photoFor(entry.word);
+        photo.src = localPhotoFor(entry.word);
         photo.alt = "Photo for " + entry.word.toUpperCase();
+        photo.addEventListener("error", () => {
+          if (photo.dataset.fallback === "true") return;
+          photo.dataset.fallback = "true";
+          photo.src = fallbackPhotoFor(entry.word);
+        });
         photo.loading = "lazy";
 
         const actions = document.createElement("div");
