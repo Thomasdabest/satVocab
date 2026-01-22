@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Crossword | Fun 2 Learn SAT Vocab</title>
+    <title>Rapid Quiz | Fun 2 Learn SAT Vocab</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -141,60 +141,40 @@
         align-items: start;
       }
 
-      .crossword-wrap {
-        background: #fdfdff;
-        border-radius: 18px;
-        padding: 18px;
-        border: 1px solid var(--border);
-      }
-
-      .crossword {
+      .quiz-panel {
         display: grid;
-        gap: 4px;
-        background: #cfd4e3;
-        padding: 4px;
-        border-radius: 16px;
+        gap: 14px;
       }
 
-      .cell {
-        position: relative;
-        background: #2a2d44;
-        border-radius: 6px;
-        display: grid;
-        place-items: center;
-      }
-
-      .cell input {
-        width: 100%;
-        height: 100%;
-        border: none;
-        outline: none;
-        text-align: center;
-        font-size: 1rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        background: white;
+      .question {
+        font-size: 1.1rem;
         color: var(--ink);
-        border-radius: 6px;
+        margin: 0 0 10px;
+        line-height: 1.4;
       }
 
-      .cell .num {
-        position: absolute;
-        top: 2px;
-        left: 4px;
-        font-size: 0.55rem;
-        color: #6b7280;
-        font-weight: 700;
+      .answer-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
       }
 
-      .cell.correct input {
-        background: #e7f8ef;
-        color: #0f5132;
+      .answer-row input {
+        flex: 1 1 200px;
+        padding: 12px 16px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        font-weight: 600;
       }
 
-      .cell.incorrect input {
-        background: #ffe9e9;
-        color: #8a2020;
+      .quiz-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-weight: 600;
+        color: var(--primary);
       }
 
       .controls {
@@ -226,11 +206,6 @@
         font-size: 0.95rem;
       }
 
-      .clues {
-        display: grid;
-        gap: 16px;
-      }
-
       .clue-card {
         background: white;
         border-radius: 18px;
@@ -242,12 +217,6 @@
         margin: 0 0 8px;
         font-size: 1rem;
         color: var(--primary);
-      }
-
-      .clue-card ol {
-        margin: 0;
-        padding-left: 18px;
-        color: var(--ink);
       }
 
       .leaderboard {
@@ -286,11 +255,6 @@
         padding-left: 18px;
       }
 
-      .clue-card li {
-        margin-bottom: 6px;
-        line-height: 1.3;
-      }
-
       @media (max-width: 960px) {
         header {
           padding: 20px 24px;
@@ -325,41 +289,48 @@
     <main>
       <section class="hero">
         <div>
-          <h1 class="title">Crossword<br />Challenge</h1>
+          <h1 class="title">Rapid Quiz<br />Challenge</h1>
           <p class="subtitle">
-            Solve the puzzle using SAT vocab clues. Click a square and type a
-            letter. Use Check to see your progress.
+            Answer quick SAT vocab questions. Earn 10 points for a correct
+            answer and lose 5 points for a wrong one.
           </p>
         </div>
         <div class="game-card">
           <div class="game-meta">
             <span>Vocabulary</span>
-            <span>Across + Down</span>
-            <span>Auto Generated</span>
+            <span>Rapid Fire</span>
+            <span>+10 / -5 scoring</span>
           </div>
           <div class="layout">
-            <div class="crossword-wrap">
-              <div class="crossword" id="crossword-grid"></div>
-            </div>
-            <div class="clues">
+            <div class="quiz-panel">
               <div class="clue-card">
-                <h3>Across</h3>
-                <ol id="across-list"></ol>
-              </div>
-              <div class="clue-card">
-                <h3>Down</h3>
-                <ol id="down-list"></ol>
+                <h3>Question</h3>
+                <p class="question" id="question-text">Loading...</p>
+                <div class="answer-row">
+                  <input
+                    id="answer-input"
+                    type="text"
+                    placeholder="Type the word"
+                    autocomplete="off"
+                  />
+                  <button class="btn" id="submit-answer-btn" type="button">
+                    Submit
+                  </button>
+                </div>
+                <div class="quiz-meta">
+                  <span id="score-text">Score: 0 pts</span>
+                  <span id="progress-text">Question 1 of 1</span>
+                </div>
+                <div class="status" id="status-text">Good luck!</div>
               </div>
               <div class="controls">
-                <button class="btn" id="check-btn" type="button">Check</button>
-                <button class="btn secondary" id="clear-btn" type="button">
-                  Clear
+                <button class="btn secondary" id="skip-btn" type="button">
+                  Skip
                 </button>
-                <button class="btn secondary" id="reveal-btn" type="button">
-                  Reveal
+                <button class="btn secondary" id="restart-btn" type="button">
+                  Restart
                 </button>
               </div>
-              <div class="status" id="status-text">Good luck!</div>
             </div>
             <div class="clue-card leaderboard">
               <h3>Weekly Leaderboard</h3>
@@ -412,10 +383,10 @@
         { word: "zenith", clue: "the highest point or peak" }
       ];
 
-      const GRID_SIZE = 13;
-      const MAX_WORDS = 14;
-      const LEADERBOARD_KEY = "crosswordLeaderboard";
-      const LEADERBOARD_RESET_KEY = "crosswordLeaderboardResetAt";
+      const SCORE_CORRECT = 10;
+      const SCORE_WRONG = -5;
+      const LEADERBOARD_KEY = "rapidQuizLeaderboard";
+      const LEADERBOARD_RESET_KEY = "rapidQuizLeaderboardResetAt";
       const TIME_ZONE = "America/Los_Angeles";
 
       const getTimeZoneOffset = (date, timeZone) => {
@@ -537,9 +508,7 @@
             .slice(0, 10)
             .forEach((entry) => {
               const li = document.createElement("li");
-              const percent =
-                entry.total > 0 ? Math.round((entry.score / entry.total) * 100) : 0;
-              li.textContent = `${entry.name} — ${entry.score}/${entry.total} (${percent}%)`;
+              li.textContent = `${entry.name} — ${entry.score} pts`;
               list.appendChild(li);
             });
         }
@@ -547,188 +516,13 @@
         status.textContent = `Next reset: ${formatResetTime()} PST`;
       };
 
-      const createGrid = (size) =>
-        Array.from({ length: size }, () =>
-          Array.from({ length: size }, () => ({
-            letter: null,
-            dirs: { h: false, v: false }
-          }))
-        );
-
-      const canPlace = (grid, word, row, col, dir) => {
-        const size = grid.length;
-        const len = word.length;
-        if (dir === "h") {
-          if (col < 0 || col + len > size) return false;
-          if (row < 0 || row >= size) return false;
-          if (col > 0 && grid[row][col - 1].letter) return false;
-          if (col + len < size && grid[row][col + len].letter) return false;
-        } else {
-          if (row < 0 || row + len > size) return false;
-          if (col < 0 || col >= size) return false;
-          if (row > 0 && grid[row - 1][col].letter) return false;
-          if (row + len < size && grid[row + len][col].letter) return false;
+      const shuffle = (items) => {
+        const array = items.slice();
+        for (let i = array.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
         }
-
-        for (let i = 0; i < len; i += 1) {
-          const r = row + (dir === "v" ? i : 0);
-          const c = col + (dir === "h" ? i : 0);
-          const cell = grid[r][c];
-          const letter = word[i];
-          if (cell.letter && cell.letter !== letter) return false;
-          if (cell.letter && cell.dirs[dir]) return false;
-          if (!cell.letter) {
-            if (dir === "h") {
-              if (r > 0 && grid[r - 1][c].letter) return false;
-              if (r < size - 1 && grid[r + 1][c].letter) return false;
-            } else {
-              if (c > 0 && grid[r][c - 1].letter) return false;
-              if (c < size - 1 && grid[r][c + 1].letter) return false;
-            }
-          }
-        }
-        return true;
-      };
-
-      const placeWord = (grid, word, row, col, dir) => {
-        for (let i = 0; i < word.length; i += 1) {
-          const r = row + (dir === "v" ? i : 0);
-          const c = col + (dir === "h" ? i : 0);
-          grid[r][c].letter = word[i];
-          grid[r][c].dirs[dir] = true;
-        }
-      };
-
-      const generateCrossword = (words, size) => {
-        const grid = createGrid(size);
-        const placements = [];
-
-        const sorted = words
-          .slice()
-          .sort((a, b) => b.word.length - a.word.length);
-        const first = sorted.shift();
-        const startRow = Math.floor(size / 2);
-        const startCol = Math.floor((size - first.word.length) / 2);
-        placeWord(grid, first.word, startRow, startCol, "h");
-        placements.push({
-          ...first,
-          row: startRow,
-          col: startCol,
-          dir: "h"
-        });
-
-        sorted.forEach((entry) => {
-          const word = entry.word.toLowerCase();
-          const candidates = [];
-          for (let r = 0; r < size; r += 1) {
-            for (let c = 0; c < size; c += 1) {
-              const cell = grid[r][c];
-              if (!cell.letter) continue;
-              for (let i = 0; i < word.length; i += 1) {
-                if (word[i] !== cell.letter) continue;
-                const options = [];
-                if (cell.dirs.h) options.push("v");
-                if (cell.dirs.v) options.push("h");
-                if (!options.length) options.push("h", "v");
-                options.forEach((dir) => {
-                  const row = r - (dir === "v" ? i : 0);
-                  const col = c - (dir === "h" ? i : 0);
-                  if (canPlace(grid, word, row, col, dir)) {
-                    candidates.push({ row, col, dir });
-                  }
-                });
-              }
-            }
-          }
-
-          if (!candidates.length) return;
-
-          const choice = candidates[Math.floor(Math.random() * candidates.length)];
-          placeWord(grid, word, choice.row, choice.col, choice.dir);
-          placements.push({ ...entry, row: choice.row, col: choice.col, dir: choice.dir });
-        });
-
-        return { grid, placements };
-      };
-
-      const buildNumbering = (grid) => {
-        const size = grid.length;
-        const numbers = Array.from({ length: size }, () =>
-          Array.from({ length: size }, () => null)
-        );
-        let count = 1;
-        for (let r = 0; r < size; r += 1) {
-          for (let c = 0; c < size; c += 1) {
-            if (!grid[r][c].letter) continue;
-            const startsAcross = c === 0 || !grid[r][c - 1].letter;
-            const startsDown = r === 0 || !grid[r - 1][c].letter;
-            if (startsAcross || startsDown) {
-              numbers[r][c] = count;
-              count += 1;
-            }
-          }
-        }
-        return numbers;
-      };
-
-      const renderGrid = (grid, numbers) => {
-        const container = document.querySelector("#crossword-grid");
-        container.style.gridTemplateColumns = `repeat(${grid.length}, minmax(0, 1fr))`;
-        container.innerHTML = "";
-        grid.forEach((row, r) => {
-          row.forEach((cell, c) => {
-            const cellEl = document.createElement("div");
-            cellEl.className = "cell";
-            if (!cell.letter) {
-              container.appendChild(cellEl);
-              return;
-            }
-            if (numbers[r][c]) {
-              const num = document.createElement("span");
-              num.className = "num";
-              num.textContent = numbers[r][c];
-              cellEl.appendChild(num);
-            }
-            const input = document.createElement("input");
-            input.maxLength = 1;
-            input.dataset.solution = cell.letter.toUpperCase();
-            input.addEventListener("input", () => {
-              input.value = input.value.toUpperCase();
-              cellEl.classList.remove("incorrect", "correct");
-            });
-            cellEl.appendChild(input);
-            container.appendChild(cellEl);
-          });
-        });
-      };
-
-      const renderClues = (placements, numbers) => {
-        const acrossList = document.querySelector("#across-list");
-        const downList = document.querySelector("#down-list");
-        acrossList.innerHTML = "";
-        downList.innerHTML = "";
-
-        const numbered = placements.map((entry) => {
-          const number = numbers[entry.row][entry.col];
-          return { ...entry, number };
-        });
-
-        const addClue = (list, entry) => {
-          const li = document.createElement("li");
-          li.value = entry.number;
-          li.textContent = entry.clue;
-          list.appendChild(li);
-        };
-
-        numbered
-          .filter((entry) => entry.dir === "h")
-          .sort((a, b) => a.number - b.number)
-          .forEach((entry) => addClue(acrossList, entry));
-
-        numbered
-          .filter((entry) => entry.dir === "v")
-          .sort((a, b) => a.number - b.number)
-          .forEach((entry) => addClue(downList, entry));
+        return array;
       };
 
       const setStatus = (text) => {
@@ -736,61 +530,95 @@
       };
 
       const initGame = () => {
-        let lastScore = null;
-        const selected = WORD_BANK.slice(0, MAX_WORDS);
-        const { grid, placements } = generateCrossword(selected, GRID_SIZE);
-        const numbers = buildNumbering(grid);
-        renderGrid(grid, numbers);
-        renderClues(placements, numbers);
-        renderLeaderboard();
+        const questionEl = document.querySelector("#question-text");
+        const answerInput = document.querySelector("#answer-input");
+        const scoreText = document.querySelector("#score-text");
+        const progressText = document.querySelector("#progress-text");
+        const submitBtn = document.querySelector("#submit-answer-btn");
+        const skipBtn = document.querySelector("#skip-btn");
+        const restartBtn = document.querySelector("#restart-btn");
+        const status = document.querySelector("#status-text");
 
-        document.querySelector("#check-btn").addEventListener("click", () => {
-          const cells = document.querySelectorAll(".cell");
-          let correct = 0;
-          let total = 0;
-          cells.forEach((cell) => {
-            const input = cell.querySelector("input");
-            if (!input) return;
-            total += 1;
-            const value = input.value.trim().toUpperCase();
-            if (!value) {
-              cell.classList.remove("correct", "incorrect");
-              return;
-            }
-            if (value === input.dataset.solution) {
-              cell.classList.add("correct");
-              cell.classList.remove("incorrect");
-              correct += 1;
-            } else {
-              cell.classList.add("incorrect");
-              cell.classList.remove("correct");
-            }
-          });
-          lastScore = { correct, total };
-          setStatus(`You have ${correct} of ${total} letters correct.`);
+        let order = shuffle(WORD_BANK);
+        let index = 0;
+        let score = 0;
+        let answered = 0;
+
+        const updateScore = () => {
+          scoreText.textContent = `Score: ${score} pts`;
+          progressText.textContent = `Question ${Math.min(
+            index + 1,
+            order.length
+          )} of ${order.length}`;
+        };
+
+        const showQuestion = () => {
+          if (index >= order.length) {
+            questionEl.textContent = "Quiz complete! Submit your score.";
+            answerInput.value = "";
+            answerInput.disabled = true;
+            submitBtn.disabled = true;
+            skipBtn.disabled = true;
+            status.textContent = `Final score: ${score} pts.`;
+            updateScore();
+            return;
+          }
+          const entry = order[index];
+          questionEl.textContent = entry.clue;
+          answerInput.value = "";
+          answerInput.disabled = false;
+          submitBtn.disabled = false;
+          skipBtn.disabled = false;
+          status.textContent = "Type the word that matches the clue.";
+          answerInput.focus();
+          updateScore();
+        };
+
+        const checkAnswer = () => {
+          const entry = order[index];
+          const value = answerInput.value.trim().toLowerCase();
+          if (!value) {
+            status.textContent = "Type an answer before submitting.";
+            return;
+          }
+          answered += 1;
+          if (value === entry.word.toLowerCase()) {
+            score += SCORE_CORRECT;
+            status.textContent = `Correct! +${SCORE_CORRECT} points.`;
+          } else {
+            score += SCORE_WRONG;
+            status.textContent = `Wrong. The answer was "${entry.word}". ${SCORE_WRONG} points.`;
+          }
+          index += 1;
+          showQuestion();
+        };
+
+        submitBtn.addEventListener("click", checkAnswer);
+        answerInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            checkAnswer();
+          }
         });
 
-        document.querySelector("#clear-btn").addEventListener("click", () => {
-          document.querySelectorAll(".cell input").forEach((input) => {
-            input.value = "";
-            input.closest(".cell").classList.remove("correct", "incorrect");
-          });
-          setStatus("Board cleared.");
+        skipBtn.addEventListener("click", () => {
+          index += 1;
+          status.textContent = "Skipped.";
+          showQuestion();
         });
 
-        document.querySelector("#reveal-btn").addEventListener("click", () => {
-          document.querySelectorAll(".cell input").forEach((input) => {
-            input.value = input.dataset.solution;
-            input.closest(".cell").classList.add("correct");
-            input.closest(".cell").classList.remove("incorrect");
-          });
-          setStatus("Puzzle revealed.");
+        restartBtn.addEventListener("click", () => {
+          order = shuffle(WORD_BANK);
+          index = 0;
+          score = 0;
+          answered = 0;
+          showQuestion();
         });
 
         document.querySelector("#submit-score-btn").addEventListener("click", () => {
-          const status = document.querySelector("#leaderboard-status");
-          if (!lastScore) {
-            status.textContent = "Check your board before submitting.";
+          const statusEl = document.querySelector("#leaderboard-status");
+          if (answered === 0) {
+            statusEl.textContent = "Answer at least one question first.";
             return;
           }
           ensureWeeklyReset();
@@ -799,14 +627,16 @@
           const entries = loadLeaderboard();
           entries.push({
             name: name.slice(0, 20),
-            score: lastScore.correct,
-            total: lastScore.total,
+            score,
             timestamp: Date.now()
           });
           saveLeaderboard(entries);
           renderLeaderboard();
-          status.textContent = "Score submitted!";
+          statusEl.textContent = "Score submitted!";
         });
+
+        renderLeaderboard();
+        showQuestion();
       };
 
       initGame();
