@@ -146,10 +146,11 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const buildPrompt = (entry) => {
   const definition = entry.meaning ? `Meaning: ${entry.meaning}.` : "";
   return [
-    `Create a vivid, single-scene image that represents the word \"${entry.word}\".`,
+    `Create a vivid, single-scene cartoon illustration that represents the word \"${entry.word}\".`,
     definition,
     "No text or letters.",
-    "Clear subject, neutral background, friendly educational style.",
+    "Clear subject, simple shapes, clean outlines, bright colors, friendly educational style.",
+    "High-quality 2D cartoon illustration.",
   ]
     .filter(Boolean)
     .join(" ");
