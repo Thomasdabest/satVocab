@@ -407,7 +407,10 @@
       const tabs = document.querySelector("#alphabet-tabs");
       const modal = document.querySelector("#card-modal");
       const modalBody = document.querySelector("#modal-body");
-      const sortedVocab = vocab
+      const uniqueVocab = Array.from(
+        new Map(vocab.map((entry) => [entry.word.toLowerCase(), entry])).values()
+      );
+      const sortedVocab = uniqueVocab
         .slice()
         .sort((a, b) => a.word.localeCompare(b.word));
 
@@ -570,7 +573,7 @@
             return;
           }
         }
-        const entry = vocab.find((item) => item.word === card.dataset.word);
+        const entry = uniqueVocab.find((item) => item.word === card.dataset.word);
         if (entry) {
           openModal(entry);
         }
