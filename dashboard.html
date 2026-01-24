@@ -147,6 +147,18 @@
         flex-wrap: wrap;
       }
 
+      .mywords-cta {
+        margin-top: 14px;
+        border: none;
+        border-radius: 999px;
+        padding: 12px 20px;
+        font-weight: 700;
+        background: #ffedd1;
+        color: #8b4b00;
+        cursor: pointer;
+        box-shadow: 0 14px 26px rgba(255, 200, 120, 0.3);
+      }
+
       .view-tab {
         border: 1px solid var(--border);
         background: white;
@@ -287,6 +299,26 @@
         text-align: center;
       }
 
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin: 46px 0 18px;
+      }
+
+      .section-title {
+        font-family: "Fraunces", "Space Grotesk", serif;
+        font-size: 2rem;
+        margin: 0;
+      }
+
+      .section-subtitle {
+        margin: 8px 0 0;
+        color: var(--muted);
+      }
+
       .modal {
         position: fixed;
         inset: 0;
@@ -414,6 +446,9 @@
           <p class="subtitle" id="view-subtitle">
             Browse the vocabulary library by letter.
           </p>
+          <button class="mywords-cta" id="mywords-cta" type="button">
+            Go to My Words
+          </button>
           <div class="view-tabs" id="view-tabs">
             <button class="view-tab active" data-view="all" type="button">
               All Words
@@ -459,6 +494,23 @@
         here.
       </div>
       <section class="grid" id="word-grid"></section>
+
+      <section id="my-words-section">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">My Words</h2>
+            <p class="section-subtitle">Review the words you marked as unfamiliar.</p>
+          </div>
+          <button class="view-tab" id="back-to-all" type="button">
+            Back to All Words
+          </button>
+        </div>
+        <div class="empty-state" id="my-empty-state">
+          You haven't marked any words yet. Tap "Don't know" on a card to add it
+          here.
+        </div>
+        <section class="grid" id="my-word-grid"></section>
+      </section>
     </main>
     <div class="modal" id="card-modal" aria-hidden="true" role="dialog">
       <div class="modal-content">
@@ -472,8 +524,13 @@
       const viewTabs = document.querySelector("#view-tabs");
       const viewSubtitle = document.querySelector("#view-subtitle");
       const emptyState = document.querySelector("#empty-state");
+      const myEmptyState = document.querySelector("#my-empty-state");
       const modal = document.querySelector("#card-modal");
       const modalBody = document.querySelector("#modal-body");
+      const myWordGrid = document.querySelector("#my-word-grid");
+      const myWordsSection = document.querySelector("#my-words-section");
+      const myWordsCta = document.querySelector("#mywords-cta");
+      const backToAll = document.querySelector("#back-to-all");
       const MY_WORDS_KEY = "satvocab.myWords";
       const uniqueVocab = Array.from(
         new Map(vocab.map((entry) => [entry.word.toLowerCase(), entry])).values()
@@ -652,7 +709,35 @@
         emptyState.style.display = list.length ? "none" : "block";
       };
 
+      const renderMyWords = () => {
+        myWordGrid.innerHTML = "";
+        const fragment = document.createDocumentFragment();
+        const list = sortedVocab.filter((entry) =>
+          myWords.has(entry.word.toLowerCase())
+        );
+        list.forEach((entry) => fragment.appendChild(buildCard(entry)));
+        myWordGrid.appendChild(fragment);
+        myEmptyState.style.display = list.length ? "none" : "block";
+      };
+
       renderGrid("ALL");
+      renderMyWords();
+
+      const setView = (view) => {
+        currentView = view;
+        viewTabs.querySelectorAll(".view-tab").forEach((item) => {
+          item.classList.remove("active");
+        });
+        const match = viewTabs.querySelector(`[data-view="${view}"]`);
+        if (match) {
+          match.classList.add("active");
+        }
+        viewSubtitle.textContent =
+          currentView === "my"
+            ? "Review the words you marked as unfamiliar."
+            : "Browse the vocabulary library by letter.";
+        renderGrid(currentLetter);
+      };
 
       viewTabs.addEventListener("click", (event) => {
         const button = event.target.closest(".view-tab");
@@ -663,16 +748,22 @@
         if (!view) {
           return;
         }
-        currentView = view;
-        viewTabs.querySelectorAll(".view-tab").forEach((item) => {
-          item.classList.remove("active");
-        });
-        button.classList.add("active");
-        viewSubtitle.textContent =
-          currentView === "my"
-            ? "Review the words you marked as unfamiliar."
-            : "Browse the vocabulary library by letter.";
-        renderGrid(currentLetter);
+        setView(view);
+        if (view === "my") {
+          renderMyWords();
+          myWordsSection.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+
+      myWordsCta.addEventListener("click", () => {
+        setView("my");
+        renderMyWords();
+        myWordsSection.scrollIntoView({ behavior: "smooth" });
+      });
+
+      backToAll.addEventListener("click", () => {
+        setView("all");
+        window.scrollTo({ top: 0, behavior: "smooth" });
       });
 
       tabs.addEventListener("click", (event) => {
@@ -716,6 +807,7 @@
             if (currentView === "my") {
               renderGrid(currentLetter);
             }
+            renderMyWords();
             return;
           }
         }
@@ -751,6 +843,7 @@
               renderGrid(currentLetter);
               closeModal();
             }
+            renderMyWords();
             return;
           }
           if (button.classList.contains("flip-btn")) {
