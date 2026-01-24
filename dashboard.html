@@ -566,7 +566,7 @@
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-+|-+$/g, "");
 
-      const localPhotoFor = (word) => `images/${slugifyWord(word)}.jpg`;
+      const localPhotoFor = (word) => `images/${slugifyWord(word)}.webp`;
       const fallbackPhotoFor = (word) =>
         `https://source.unsplash.com/featured/600x400?${encodeURIComponent(word)}`;
 

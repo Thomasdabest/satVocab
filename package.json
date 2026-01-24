@@ -1,9 +1,12 @@
 {
   "scripts": {
-    "generate-images": "node scripts/generate-images.js"
+    "generate-images": "node scripts/generate-images.js",
+    "generate-animated-webp": "node scripts/generate-animated-webp.cjs"
   },
   "devDependencies": {
     "@types/node": "^25.0.5",
+    "sharp": "^0.34.5",
+    "sharp-gif2": "^0.1.3",
     "vite": "^7.3.1"
   }
 }
