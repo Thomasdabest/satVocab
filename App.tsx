@@ -13,16 +13,34 @@ const App: React.FC = () => {
 
   // Load session on mount
   useEffect(() => {
+    const DB_RESET_VERSION = '2026-01-26';
+    const lastReset = localStorage.getItem('vocab_app_db_reset');
+    if (lastReset !== DB_RESET_VERSION) {
+      localStorage.removeItem('vocab_app_users');
+      localStorage.removeItem('vocab_app_session');
+      localStorage.setItem('vocab_app_db_reset', DB_RESET_VERSION);
+    }
+
     const savedSession = localStorage.getItem('vocab_app_session');
-    if (savedSession) {
-      setCurrentUser(JSON.parse(savedSession));
-      setCurrentView(View.Home);
+    if (!savedSession) return;
+
+    try {
+      const parsed = JSON.parse(savedSession) as User;
+      if (parsed?.email && parsed?.name) {
+        setCurrentUser(parsed);
+        setCurrentView(View.Home);
+      } else {
+        localStorage.removeItem('vocab_app_session');
+      }
+    } catch {
+      localStorage.removeItem('vocab_app_session');
     }
   }, []);
 
   const handleLogin = (user: User) => {
-    setCurrentUser(user);
-    localStorage.setItem('vocab_app_session', JSON.stringify(user));
+    const sanitizedUser: User = { ...user, password: undefined, passwordHash: undefined };
+    setCurrentUser(sanitizedUser);
+    localStorage.setItem('vocab_app_session', JSON.stringify(sanitizedUser));
     setCurrentView(View.Home);
   };
 

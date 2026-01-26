@@ -14,6 +14,7 @@ export interface User {
   name: string;
   email: string;
   password?: string;
+  passwordHash?: string;
   savedWords: string[];
   unitProgress?: Record<number, number>; // unitId -> highscore
 }

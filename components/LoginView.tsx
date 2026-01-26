@@ -12,63 +12,155 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Robust email validation regex
   const isValidEmail = (emailStr: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const normalizeEmail = (value: string) => value.trim().toLowerCase();
+  const normalizeName = (value: string) => value.trim();
+
+  const loadUsers = (): User[] => {
+    const usersJson = localStorage.getItem('vocab_app_users');
+    if (!usersJson) return [];
+    try {
+      const parsed = JSON.parse(usersJson);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const persistUsers = (users: User[]) => {
+    localStorage.setItem('vocab_app_users', JSON.stringify(users));
+  };
+
+  const hashPassword = async (value: string) => {
+    if (!window.crypto?.subtle) return null;
+    const encoder = new TextEncoder();
+    const data = encoder.encode(value);
+    const digest = await window.crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(digest))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsSubmitting(true);
 
     // Basic format validation
-    if (!isValidEmail(email)) {
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedPassword = password.trim();
+    const normalizedName = normalizeName(name);
+
+    if (!isValidEmail(normalizedEmail)) {
       setError("Please enter a valid email address (e.g., name@example.com).");
+      setIsSubmitting(false);
       return;
     }
 
-    if (password.length < 6) {
+    if (normalizedPassword.length < 6) {
       setError("Password must be at least 6 characters long.");
+      setIsSubmitting(false);
       return;
     }
 
-    // Get current users from "Database" - This logic strictly preserves existing data
-    const usersJson = localStorage.getItem('vocab_app_users');
-    const users: User[] = usersJson ? JSON.parse(usersJson) : [];
+    // Get current users from "Database"
+    const users = loadUsers();
 
     if (isLoginMode) {
       // Login logic: Search existing list
-      const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-      if (user) {
-        onLogin(user);
-      } else {
+      const user = users.find(u => u.email.toLowerCase() === normalizedEmail);
+      if (!user) {
         setError("Invalid email or password. Please try again.");
-      }
-    } else {
-      // Sign up logic: Protect against duplicates and preserve existing accounts
-      if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-        setError("This email is already registered. Please login instead.");
+        setIsSubmitting(false);
         return;
       }
 
-      if (!name.trim()) {
+      let inputHash: string | null = null;
+      if (user.passwordHash) {
+        inputHash = await hashPassword(normalizedPassword);
+        if (!inputHash) {
+          setError("Your browser doesn't support secure password verification. Please update your browser.");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      const matches =
+        (user.passwordHash && inputHash && user.passwordHash === inputHash) ||
+        (!user.passwordHash && user.password === normalizedPassword);
+
+      if (!matches) {
+        setError("Invalid email or password. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const sanitizedUser: User = {
+        ...user,
+        email: normalizedEmail,
+        name: user.name?.trim() || 'Scholar',
+        savedWords: Array.isArray(user.savedWords) ? user.savedWords : [],
+        password: undefined,
+        passwordHash: undefined
+      };
+
+      if (!user.passwordHash) {
+        const passwordHash = await hashPassword(normalizedPassword);
+        if (!passwordHash) {
+          onLogin(sanitizedUser);
+          setIsSubmitting(false);
+          return;
+        }
+        const updatedUsers = users.map(u =>
+          u.email.toLowerCase() === normalizedEmail
+            ? { ...u, passwordHash, password: undefined }
+            : u
+        );
+        persistUsers(updatedUsers);
+      }
+
+      onLogin(sanitizedUser);
+    } else {
+      // Sign up logic: Protect against duplicates and preserve existing accounts
+      if (users.some(u => u.email.toLowerCase() === normalizedEmail)) {
+        setError("This email is already registered. Please login instead.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!normalizedName) {
         setError("Please enter your full name.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const passwordHash = await hashPassword(normalizedPassword);
+      if (!passwordHash) {
+        setError("Your browser doesn't support secure password storage. Please update your browser.");
+        setIsSubmitting(false);
         return;
       }
 
       const newUser: User = {
-        name: name.trim(),
-        email: email.toLowerCase().trim(),
-        password, // In a real production app, this would be hashed server-side
+        name: normalizedName,
+        email: normalizedEmail,
+        passwordHash,
         savedWords: []
       };
 
       // Append new user to the existing array to ensure no one is deleted
       const updatedUsers = [...users, newUser];
-      localStorage.setItem('vocab_app_users', JSON.stringify(updatedUsers));
-      onLogin(newUser);
+      persistUsers(updatedUsers);
+      onLogin({ ...newUser, passwordHash: undefined });
     }
+
+    setIsSubmitting(false);
   };
 
   return (
@@ -97,7 +189,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                 </div>
                 <div>
                   <h4 className="font-bold text-lg">Persistent Progress</h4>
-                  <p className="text-indigo-100 text-sm">Your saved words are stored securely in our database.</p>
+                  <p className="text-indigo-100 text-sm">Your saved words are stored locally on this device.</p>
                 </div>
               </li>
               <li className="flex items-start gap-4">
@@ -153,14 +245,15 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                   <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                   </span>
-                  <input 
-                    type="text" 
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pl-12 pr-4 focus:border-indigo-400 focus:bg-white focus:outline-none transition-all font-medium"
-                    placeholder="Your Name"
-                  />
+                <input 
+                  type="text" 
+                  required
+                  autoComplete="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pl-12 pr-4 focus:border-indigo-400 focus:bg-white focus:outline-none transition-all font-medium"
+                  placeholder="Your Name"
+                />
                 </div>
               </div>
             )}
@@ -174,6 +267,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                 <input 
                   type="email" 
                   required
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pl-12 pr-4 focus:border-indigo-400 focus:bg-white focus:outline-none transition-all font-medium"
@@ -193,6 +287,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                 <input 
                   type={showPassword ? "text" : "password"} 
                   required
+                  autoComplete={isLoginMode ? "current-password" : "new-password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pl-12 pr-12 focus:border-indigo-400 focus:bg-white focus:outline-none transition-all font-medium"
@@ -214,15 +309,16 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
 
             <button 
               type="submit"
+              disabled={isSubmitting}
               className="w-full bg-indigo-600 text-white py-5 rounded-[1.5rem] font-black text-lg hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-[0.98] mt-4"
             >
-              {isLoginMode ? 'Sign In' : 'Create Free Account'}
+              {isSubmitting ? 'Please wait…' : isLoginMode ? 'Sign In' : 'Create Free Account'}
             </button>
           </form>
 
           <div className="mt-8 text-center space-y-6">
             <p className="text-xs text-slate-400 font-medium px-8 leading-relaxed">
-              Account data is stored locally in your browser for this session. It will persist unless you clear your browser cache.
+              Account data is stored locally in your browser on this device. It will persist unless you clear your browser storage.
             </p>
           </div>
         </div>
