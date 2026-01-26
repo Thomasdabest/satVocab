@@ -1,329 +1,80 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Fun 2 Learn SAT Vocab</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      :root {
-        --bg: #f6f7fb;
-        --ink: #111827;
-        --muted: #5b6478;
-        --primary: #4c4cf3;
-        --primary-deep: #2b2bd9;
-        --soft: #eef0ff;
-        --card: #ffffff;
-        --shadow: 0 24px 60px rgba(17, 24, 39, 0.08);
-        --radius: 22px;
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Primary Meta Tags -->
+  <title>Fun 2 Learn SAT Vocab | Master 2200+ Words</title>
+  <meta name="title" content="Fun 2 Learn SAT Vocab | Master 2200+ Words">
+  <meta name="description" content="The ultimate AI-powered SAT vocabulary trainer. Featuring visual mnemonics, native pronunciation, and interactive games at fun2learnsatvocab.com.">
 
-      * {
-        box-sizing: border-box;
-      }
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fun2learnsatvocab.com/">
+  <meta property="og:title" content="Fun 2 Learn SAT Vocab">
+  <meta property="og:description" content="Master 2200+ SAT words with AI-generated images and crystal-clear audio.">
+  <meta property="og:image" content="https://fun2learnsatvocab.com/og-image.png">
 
-      body {
-        margin: 0;
-        font-family: "Space Grotesk", system-ui, sans-serif;
-        color: var(--ink);
-        background: radial-gradient(circle at top, #eef1ff 0%, #f6f7fb 45%, #fefeff 100%);
-      }
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://fun2learnsatvocab.com/">
+  <meta property="twitter:title" content="Fun 2 Learn SAT Vocab">
+  <meta property="twitter:description" content="Master 2200+ SAT words with AI-generated images and crystal-clear audio.">
 
-      a {
-        text-decoration: none;
-        color: inherit;
-      }
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+  <link rel="canonical" href="https://fun2learnsatvocab.com" />
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+    .card-flip { perspective: 1000px; }
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .card-flipped .card-inner { transform: rotateY(180deg); }
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 3rem;
+    }
+    .card-back { transform: rotateY(180deg); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Elegant transition for view changes */
+    .view-enter { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 
-      .page {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
-
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 28px 72px;
-      }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-      }
-
-      .brand .logo {
-        width: 36px;
-        height: 36px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #5b5bff, #3a32d8);
-        color: white;
-        display: grid;
-        place-items: center;
-        font-weight: 700;
-        box-shadow: 0 10px 20px rgba(76, 76, 243, 0.35);
-      }
-
-      .nav-actions {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        font-weight: 600;
-        color: #6b7280;
-      }
-
-      .pill {
-        padding: 10px 20px;
-        border-radius: 999px;
-        background: var(--primary);
-        color: white;
-        font-weight: 600;
-        box-shadow: 0 12px 25px rgba(76, 76, 243, 0.35);
-      }
-
-      main {
-        flex: 1;
-        padding: 20px 72px 80px;
-      }
-
-      .hero {
-        text-align: center;
-        margin-top: 48px;
-        animation: fadeUp 0.9s ease-out;
-      }
-
-      .hero h1 {
-        font-family: "Fraunces", "Space Grotesk", serif;
-        font-size: clamp(2.6rem, 4vw, 4.1rem);
-        line-height: 1.05;
-        margin-bottom: 16px;
-        letter-spacing: -0.02em;
-      }
-
-      .hero h1 span {
-        color: var(--primary);
-      }
-
-      .hero p {
-        font-size: 1.05rem;
-        color: var(--muted);
-        max-width: 680px;
-        margin: 0 auto 28px;
-      }
-
-      .cta {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 14px 28px;
-        border-radius: 999px;
-        background: var(--primary);
-        color: white;
-        font-weight: 600;
-        box-shadow: 0 18px 30px rgba(76, 76, 243, 0.35);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      }
-
-      .cta:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 22px 40px rgba(76, 76, 243, 0.4);
-      }
-
-      .feature-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 24px;
-        margin-top: 72px;
-        animation: fadeUp 1.1s ease-out;
-      }
-
-      .card {
-        background: var(--card);
-        border-radius: var(--radius);
-        padding: 28px 26px;
-        box-shadow: var(--shadow);
-        border: 1px solid #eef0f6;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .card::after {
-        content: "";
-        position: absolute;
-        inset: auto -30% -40% -30%;
-        height: 120px;
-        background: radial-gradient(circle, rgba(76, 76, 243, 0.1), transparent 70%);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      .card:hover::after {
-        opacity: 1;
-      }
-
-      .icon {
-        width: 42px;
-        height: 42px;
-        border-radius: 14px;
-        display: grid;
-        place-items: center;
-        font-size: 20px;
-        margin-bottom: 16px;
-      }
-
-      .icon.blue {
-        background: #e8ecff;
-        color: #3843e8;
-      }
-
-      .icon.purple {
-        background: #f1eaff;
-        color: #8b4dff;
-      }
-
-      .icon.orange {
-        background: #fff1e6;
-        color: #ff7a1a;
-      }
-
-      .card h3 {
-        margin: 0 0 8px;
-        font-size: 1.1rem;
-      }
-
-      .card p {
-        margin: 0;
-        color: var(--muted);
-        line-height: 1.5;
-        font-size: 0.98rem;
-      }
-
-      .sparkle {
-        position: absolute;
-        right: 10%;
-        top: 10%;
-        width: 140px;
-        height: 140px;
-        background: radial-gradient(circle, rgba(76, 76, 243, 0.14), transparent 70%);
-        filter: blur(2px);
-        z-index: -1;
-        animation: float 8s ease-in-out infinite;
-      }
-
-      @keyframes fadeUp {
-        from {
-          opacity: 0;
-          transform: translateY(12px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes float {
-        0%,
-        100% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-18px);
-        }
-      }
-
-      @media (max-width: 960px) {
-        header,
-        main {
-          padding-left: 32px;
-          padding-right: 32px;
-        }
-
-        .feature-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .hero {
-          margin-top: 32px;
-        }
-      }
-
-      @media (max-width: 560px) {
-        header {
-          padding: 20px 22px;
-        }
-
-        .nav-actions {
-          display: none;
-        }
-
-        main {
-          padding: 10px 22px 60px;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="page">
-      <header>
-        <div class="brand">
-          <div class="logo">F</div>
-          <span>Fun 2 Learn SAT Vocab</span>
-        </div>
-        <div class="nav-actions">
-          <a href="sign-in.html">Login</a>
-          <a class="pill" href="sign-up.html">Get Started</a>
-        </div>
-      </header>
-
-      <main>
-        <div class="sparkle" aria-hidden="true"></div>
-        <section class="hero">
-          <h1>
-            Master Your <span>SAT Vocab</span><br />
-            The Fun Way.
-          </h1>
-          <p>
-            AI-powered visual mnemonics, native pronunciation, and interactive games
-            designed to make learning stick. Join thousands of students boosting their scores.
-          </p>
-          <a class="cta" href="sign-up.html">Start Learning Free</a>
-        </section>
-
-        <section class="feature-grid">
-          <article class="card">
-            <div class="icon blue">🖼️</div>
-            <h3>AI Visual Mnemonics</h3>
-            <p>
-              Every word is paired with a custom-generated AI image to help you
-              visualize complex meanings instantly.
-            </p>
-          </article>
-          <article class="card">
-            <div class="icon purple">🔊</div>
-            <h3>Crystal Clear Audio</h3>
-            <p>
-              Listen to high-quality text-to-speech for correct pronunciation.
-              Hear the words while you study.
-            </p>
-          </article>
-          <article class="card">
-            <div class="icon orange">⚡</div>
-            <h3>Personal Word List</h3>
-            <p>
-              Easily save difficult words to your own personal list and review
-              them whenever you need extra focus.
-            </p>
-          </article>
-        </section>
-      </main>
-    </div>
-  </body>
+  <script type="importmap">
+  {
+    "imports": {
+      "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+      "react/": "https://esm.sh/react@^19.2.3/",
+      "react": "https://esm.sh/react@^19.2.3",
+      "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+      "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+      "vite": "https://esm.sh/vite@^7.3.0"
+    }
+  }
+  </script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-slate-50 text-slate-900 overflow-x-hidden">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
 </html>
