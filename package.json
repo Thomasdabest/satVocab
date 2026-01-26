@@ -1,4 +1,3 @@
-
 {
   "name": "fun-2-learn-sat-vocab",
   "private": true,
@@ -11,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.34.0",
+    "npm": "^11.8.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
